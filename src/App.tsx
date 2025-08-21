@@ -214,128 +214,115 @@ function App() {
       <div className="min-h-screen flex flex-col bg-background">
         <Navbar />
         <main className="flex-grow container mx-auto px-4 py-8 sm:py-12">
-          <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
-            <div className="lg:col-span-3 space-y-8">
+          <div className="max-w-2xl mx-auto space-y-12">
+            <section>
+              <h2 className="text-2xl font-bold text-foreground flex items-center gap-3 mb-4">
+                <CalendarIcon size={24} /> 1. Adım: Tarih Seçin
+              </h2>
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={handleDateSelect}
+                disabled={(date) =>
+                  date < new Date(new Date().setDate(new Date().getDate() - 1))
+                }
+                className="rounded-md border mx-auto"
+              />
+            </section>
+
+            {isLoading && (
+              <div className="text-center text-muted-foreground animate-pulse">
+                Müsait saatler yükleniyor...
+              </div>
+            )}
+
+            {availableSlots.length > 0 && !isLoading && (
               <section>
                 <h2 className="text-2xl font-bold text-foreground flex items-center gap-3 mb-4">
-                  <CalendarIcon size={24} /> 1. Adım: Tarih Seçin
+                  <Clock size={24} /> 2. Adım: Saat Seçin
                 </h2>
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={handleDateSelect}
-                  disabled={(date) =>
-                    date <
-                    new Date(new Date().setDate(new Date().getDate() - 1))
-                  }
-                  className="rounded-md border"
-                />
-              </section>
-              {isLoading && (
-                <div className="text-center text-muted-foreground animate-pulse">
-                  Müsait saatler yükleniyor...
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                  {availableSlots.map((slot) => (
+                    <Button
+                      key={slot}
+                      variant={selectedSlot === slot ? "default" : "outline"}
+                      onClick={() => setSelectedSlot(slot)}
+                    >
+                      {slot}
+                    </Button>
+                  ))}
                 </div>
-              )}
-              {availableSlots.length > 0 && !isLoading && (
-                <section>
-                  <h2 className="text-2xl font-bold text-foreground flex items-center gap-3 mb-4">
-                    <Clock size={24} /> 2. Adım: Saat Seçin
-                  </h2>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                    {availableSlots.map((slot) => (
-                      <Button
-                        key={slot}
-                        variant={selectedSlot === slot ? "default" : "outline"}
-                        onClick={() => setSelectedSlot(slot)}
-                      >
-                        {slot}
-                      </Button>
-                    ))}
-                  </div>
-                </section>
-              )}
-            </div>
+              </section>
+            )}
 
-            <div className="lg:col-span-2">
-              <div className="sticky top-24">
-                <section>
-                  <h2 className="text-2xl font-bold text-foreground flex items-center gap-3 mb-4">
-                    <User size={24} /> 3. Adım: Bilgilerinizi Girin
-                  </h2>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Randevu Detayları</CardTitle>
-                      <CardDescription>
-                        {selectedSlot
-                          ? `Seçilen tarih: ${selectedDate?.toLocaleDateString("tr-TR")} - ${selectedSlot}`
-                          : "Lütfen bir tarih ve saat seçin."}
-                      </CardDescription>
-                    </CardHeader>
-                    {selectedSlot && (
-                      <CardContent>
-                        <form
-                          onSubmit={handleBookingSubmit}
-                          className="space-y-4"
-                        >
-                          <div className="space-y-2">
-                            <Label htmlFor="user_name">Adınız</Label>
-                            <Input
-                              id="user_name"
-                              type="text"
-                              required
-                              value={formData.user_name}
-                              onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  user_name: e.target.value,
-                                })
-                              }
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="user_surname">Soyadınız</Label>
-                            <Input
-                              id="user_surname"
-                              type="text"
-                              required
-                              value={formData.user_surname}
-                              onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  user_surname: e.target.value,
-                                })
-                              }
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="phone">Telefon</Label>
-                            <Input
-                              id="phone"
-                              type="tel"
-                              required
-                              value={formData.phone}
-                              onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  phone: e.target.value,
-                                })
-                              }
-                            />
-                          </div>
-                          <Button
-                            type="submit"
-                            className="w-full"
-                            disabled={isLoading}
-                          >
-                            {isLoading ? "İşleniyor..." : "Randevuyu Onayla"}
-                          </Button>
-                        </form>
-                      </CardContent>
-                    )}
-                  </Card>
-                </section>
-              </div>
-            </div>
+            {selectedSlot && (
+              <section>
+                <h2 className="text-2xl font-bold text-foreground flex items-center gap-3 mb-4">
+                  <User size={24} /> 3. Adım: Bilgilerinizi Girin
+                </h2>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Randevu Detayları</CardTitle>
+                    <CardDescription>
+                      {`Seçilen tarih: ${selectedDate?.toLocaleDateString("tr-TR")} - ${selectedSlot}`}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleBookingSubmit} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="user_name">Adınız</Label>
+                        <Input
+                          id="user_name"
+                          type="text"
+                          required
+                          value={formData.user_name}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              user_name: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="user_surname">Soyadınız</Label>
+                        <Input
+                          id="user_surname"
+                          type="text"
+                          required
+                          value={formData.user_surname}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              user_surname: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Telefon</Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          required
+                          value={formData.phone}
+                          onChange={(e) =>
+                            setFormData({ ...formData, phone: e.target.value })
+                          }
+                        />
+                      </div>
+                      <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? "İşleniyor..." : "Randevuyu Onayla"}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </section>
+            )}
           </div>
         </main>
         <Footer />
