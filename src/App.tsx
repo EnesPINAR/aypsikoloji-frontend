@@ -20,8 +20,6 @@ import {
   Sun,
 } from "lucide-react";
 
-import "./App.css";
-
 // shadcn/ui bileşenlerini import ediyoruz
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -42,6 +40,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import "./App.css";
 
 // API Ayarları
 const API_URL = "http://127.0.0.1:8000/api";
@@ -105,52 +104,55 @@ const Navbar = () => {
   ];
 
   return (
-    <header className="bg-background/80 backdrop-blur-md sticky top-0 z-40 border-b">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          <Link
-            to="/"
-            className="flex items-center gap-2 text-xl font-bold text-foreground"
-          >
-            <HeartPulse className="text-primary" />
-            <span>Psikolog</span>
-          </Link>
-          <nav className="hidden md:flex items-center gap-6">
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {link.label}
-              </a>
-            ))}
-          </nav>
-          <div className="flex items-center gap-2">
-            <ModeToggle />
-            <Button asChild className="hidden sm:inline-flex">
-              <Link to="/randevu">Randevu Al</Link>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setIsMenuOpen(true)}
+    // DÜZELTME: Navbar bileşeni artık bir React Fragment (<>) ile sarmalanıyor.
+    <>
+      <header className="bg-background/80 backdrop-blur-md sticky top-0 z-40 border-b">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <Link
+              to="/"
+              className="flex items-center gap-2 text-xl font-bold text-foreground"
             >
-              <Menu />
-            </Button>
+              <HeartPulse className="text-primary" />
+              <span>Psikolog</span>
+            </Link>
+            <nav className="hidden md:flex items-center gap-6">
+              {navLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </nav>
+            <div className="flex items-center gap-2">
+              <ModeToggle />
+              <Button asChild className="hidden sm:inline-flex">
+                <Link to="/randevu">Randevu Al</Link>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+                onClick={() => setIsMenuOpen(true)}
+              >
+                <Menu />
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
-      {/* Mobil Menü */}
+      </header>
+      {/* DÜZELTME: Mobil menü artık header'ın DIŞINDA render ediliyor. */}
       {isMenuOpen && (
-        <div
-          className="md:hidden fixed inset-0 bg-black/40 z-50"
-          onClick={() => setIsMenuOpen(false)}
-        >
-          {/* DÜZELTME: Menünün arka planının daha belirgin olması için soluna bir kenarlık eklendi. */}
+        <div className="md:hidden fixed inset-0 z-50">
           <div
-            className="fixed top-0 right-0 h-full w-4/5 max-w-sm bg-background border-l p-6 animate-in slide-in-from-right"
+            className="fixed inset-0 bg-black/60 animate-in fade-in-0"
+            onClick={() => setIsMenuOpen(false)}
+          />
+          <div
+            className="fixed top-0 right-0 h-full w-4/5 max-w-sm bg-background border-l shadow-2xl p-6 animate-in slide-in-from-right-80"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-end">
@@ -162,7 +164,7 @@ const Navbar = () => {
                 <X />
               </Button>
             </div>
-            <div className="flex flex-col gap-4 mt-4">
+            <nav className="flex flex-col gap-4 mt-4">
               <Link
                 to="/"
                 onClick={() => setIsMenuOpen(false)}
@@ -184,11 +186,11 @@ const Navbar = () => {
                   Randevu Al
                 </Link>
               </Button>
-            </div>
+            </nav>
           </div>
         </div>
       )}
-    </header>
+    </>
   );
 };
 
@@ -207,14 +209,15 @@ const HomePage = () => {
   return (
     <main className="flex-grow">
       <section className="relative h-[calc(100vh-4rem)] flex items-center justify-center text-center">
-        {/* Arka Plan Görseli */}
-        <div className="absolute inset-0 w-full h-full bg-cover bg-center bg-[url(./assets/bg.svg)]"></div>
-        {/* Overlay artık tema duyarlı. */}
+        <div
+          className="absolute inset-0 w-full h-full bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=3448&auto-format&fit=crop')",
+          }}
+        ></div>
         <div className="absolute inset-0 bg-background/80"></div>
-
-        {/* İçerik */}
         <div className="relative z-10 p-4 animate-in fade-in slide-in-from-bottom-12 duration-700">
-          {/* Yazı renkleri artık tema duyarlı. */}
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-balance text-foreground">
             Daha İyi Bir Sen İçin İlk Adımı At
           </h1>
@@ -415,14 +418,13 @@ const AppointmentPage = () => {
 // --- ANA YAPI VE YÖNLENDİRME ---
 
 const Layout = () => {
-  // DÜZELTME: react-router-dom'un hook'unu kullanarak yol tespiti daha stabil hale getirildi.
   const location = useLocation();
   const showFooter = location.pathname !== "/";
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
-      <Outlet /> {/* Sayfa içeriği burada görünecek */}
+      <Outlet />
       {showFooter && <Footer />}
     </div>
   );
@@ -437,8 +439,6 @@ function App() {
           <Route element={<Layout />}>
             <Route index element={<HomePage />} />
             <Route path="/randevu" element={<AppointmentPage />} />
-            {/* Buraya gelecekte yeni sayfalar ekleyebilirsin */}
-            {/* <Route path="/hakkimizda" element={<HakkimizdaPage />} /> */}
           </Route>
         </Routes>
       </BrowserRouter>
