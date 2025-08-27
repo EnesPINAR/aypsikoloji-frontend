@@ -104,7 +104,6 @@ const Navbar = () => {
   ];
 
   return (
-    // DÜZELTME: Navbar bileşeni artık bir React Fragment (<>) ile sarmalanıyor.
     <>
       <header className="bg-background/80 backdrop-blur-md sticky top-0 z-40 border-b">
         <div className="container mx-auto px-4">
@@ -144,7 +143,6 @@ const Navbar = () => {
           </div>
         </div>
       </header>
-      {/* DÜZELTME: Mobil menü artık header'ın DIŞINDA render ediliyor. */}
       {isMenuOpen && (
         <div className="md:hidden fixed inset-0 z-50">
           <div
@@ -281,7 +279,8 @@ const AppointmentPage = () => {
     setIsLoading(true);
     const bookingData = {
       ...formData,
-      date: `${selectedDate.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`,
+      // DÜZELTME: 'date' yerine 'selectedDate' kullanıldı.
+      date: `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`,
       time: selectedSlot,
     };
 
