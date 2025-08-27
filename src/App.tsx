@@ -98,9 +98,10 @@ const ModeToggle = () => {
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // DÜZELTME: Navigasyon linkleri artık React Router Link bileşenini kullanıyor.
   const navLinks = [
-    { href: "#", label: "Hakkımızda" },
-    { href: "#", label: "İletişim" },
+    { to: "/hakkimizda", label: "Hakkımızda" },
+    { to: "#", label: "İletişim" }, // İletişim sayfası eklendiğinde to: '/iletisim' yapılabilir.
   ];
 
   return (
@@ -117,13 +118,13 @@ const Navbar = () => {
             </Link>
             <nav className="hidden md:flex items-center gap-6">
               {navLinks.map((link) => (
-                <a
+                <Link
                   key={link.label}
-                  href={link.href}
+                  to={link.to}
                   className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {link.label}
-                </a>
+                </Link>
               ))}
             </nav>
             <div className="flex items-center gap-2">
@@ -171,13 +172,14 @@ const Navbar = () => {
                 Ana Sayfa
               </Link>
               {navLinks.map((link) => (
-                <a
+                <Link
                   key={link.label}
-                  href={link.href}
+                  to={link.to}
+                  onClick={() => setIsMenuOpen(false)}
                   className="text-lg font-medium text-foreground p-2 rounded-md hover:bg-accent"
                 >
                   {link.label}
-                </a>
+                </Link>
               ))}
               <Button asChild className="w-full mt-4">
                 <Link to="/randevu" onClick={() => setIsMenuOpen(false)}>
@@ -207,13 +209,8 @@ const HomePage = () => {
   return (
     <main className="flex-grow">
       <section className="relative h-[calc(100vh-4rem)] flex items-center justify-center text-center">
-        <div
-          className="absolute inset-0 w-full h-full bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=3448&auto-format&fit=crop')",
-          }}
-        ></div>
+        {/* DÜZELTME: Arka plan görseli artık Tailwind class'ı ile veriliyor. */}
+        <div className="absolute inset-0 w-full h-full bg-cover bg-center bg-[url(./assets/bg.svg)]"></div>
         <div className="absolute inset-0 bg-background/80"></div>
         <div className="relative z-10 p-4 animate-in fade-in slide-in-from-bottom-12 duration-700">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-balance text-foreground">
@@ -279,7 +276,6 @@ const AppointmentPage = () => {
     setIsLoading(true);
     const bookingData = {
       ...formData,
-      // DÜZELTME: 'date' yerine 'selectedDate' kullanıldı.
       date: `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`,
       time: selectedSlot,
     };
@@ -414,6 +410,49 @@ const AppointmentPage = () => {
   );
 };
 
+// YENİ: Hakkımızda Sayfası Bileşeni
+const HakkimizdaPage = () => {
+  return (
+    <main className="flex-grow container mx-auto px-4 py-8 sm:py-12">
+      <div className="max-w-3xl mx-auto">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">
+            Hakkımızda
+          </h1>
+          <p className="mt-2 text-lg text-muted-foreground">
+            Uzmanımızla tanışın.
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8 sm:gap-12">
+          <div className="flex-shrink-0">
+            <img
+              src="https://placehold.co/160x160/E2E8F0/475569?text=Foto"
+              alt="Psikolog Adı Soyadı"
+              className="rounded-full w-32 h-32 sm:w-40 sm:h-40 object-cover border-4 border-muted"
+            />
+          </div>
+          <div className="text-center sm:text-left">
+            <h2 className="text-2xl font-semibold text-foreground">
+              Dr. Elif Yılmaz
+            </h2>
+            <p className="text-primary font-medium mt-1">Klinik Psikolog</p>
+            <p className="mt-4 text-muted-foreground leading-relaxed">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+              enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est laborum.
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+};
+
 // --- ANA YAPI VE YÖNLENDİRME ---
 
 const Layout = () => {
@@ -438,6 +477,8 @@ function App() {
           <Route element={<Layout />}>
             <Route index element={<HomePage />} />
             <Route path="/randevu" element={<AppointmentPage />} />
+            {/* YENİ: Hakkımızda sayfası için route eklendi. */}
+            <Route path="/hakkimizda" element={<HakkimizdaPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
