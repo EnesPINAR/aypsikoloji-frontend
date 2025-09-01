@@ -21,7 +21,7 @@ export function Navbar() {
               className="flex items-center gap-2 text-xl font-bold text-foreground"
             >
               <HeartPulse className="text-primary" />
-              <span>Psikolog</span>
+              <span>AyPsikoloji</span>
             </Link>
             <nav className="hidden md:flex items-center gap-6">
               {navLinks.map((link) => (
