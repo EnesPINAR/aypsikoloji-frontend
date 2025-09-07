@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
-const API_URL = "http://127.0.0.1:8000/api";
+const API_URL = "/api";
 const PSYCHOLOGIST_ID = 1;
 
 export function AppointmentPage() {

@@ -14,8 +14,8 @@ export function HakkimizdaPage() {
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8 sm:gap-12">
           <div className="flex-shrink-0">
             <img
-              src="https://placehold.co/160x160/E2E8F0/475569?text=Foto"
-              alt="Psikolog Adı Soyadı"
+              src="src/assets/pp.webp"
+              alt="Aybike Yaren Topcuoğlu"
               className="rounded-full w-32 h-32 sm:w-40 sm:h-40 object-cover border-4 border-muted"
             />
           </div>
