@@ -13,6 +13,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
+// --- YENİ EKLENDİ: CSRF ÇEREZİNİ OKUMAK İÇİN YARDIMCI FONKSİYON ---
+// Bu fonksiyon, Django'nun tarayıcıya gönderdiği 'csrftoken' çerezini okur.
+function getCookie(name: string) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      // Çerez bu isimle başlıyor mu?
+      if (cookie.substring(0, name.length + 1) === name + "=") {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+// --- YENİ EKLEME SONU ---
+
 const API_URL = "/api";
 const PSYCHOLOGIST_ID = 1;
 
@@ -27,6 +46,7 @@ export function AppointmentPage() {
     phone: "",
   });
 
+  // --- Bu fonksiyonda değişiklik yok (GET isteği CSRF gerektirmez) ---
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
     setSelectedDate(date);
@@ -34,7 +54,9 @@ export function AppointmentPage() {
     setSelectedSlot(null);
     setIsLoading(true);
 
-    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    const formattedDate = `${date.getFullYear()}-${String(
+      date.getMonth() + 1,
+    ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
     const requestUrl = `${API_URL}/public/available-slots/?date=${formattedDate}&psychologist_id=${PSYCHOLOGIST_ID}`;
 
     fetch(requestUrl)
@@ -56,6 +78,7 @@ export function AppointmentPage() {
       .finally(() => setIsLoading(false));
   };
 
+  // --- BU FONKSİYON GÜNCELLENDİ (CSRF VE HATA YAKALAMA) ---
   const handleBookingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedDate || !selectedSlot) return;
@@ -63,16 +86,37 @@ export function AppointmentPage() {
     setIsLoading(true);
     const bookingData = {
       ...formData,
-      date: `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`,
+      date: `${selectedDate.getFullYear()}-${String(
+        selectedDate.getMonth() + 1,
+      ).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`,
       time: selectedSlot,
     };
 
+    // --- YENİ EKLENDİ: CSRF Token'ı çerezden al ---
+    const csrftoken = getCookie("csrftoken");
+    // --- YENİ EKLEME SONU ---
+
     fetch(`${API_URL}/public/appointments/`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        // --- YENİ EKLENDİ: CSRF Başlığını isteğe ekle ---
+        "X-CSRFToken": csrftoken || "",
+        // --- YENİ EKLEME SONU ---
+      },
       body: JSON.stringify(bookingData),
     })
-      .then((res) => (res.ok ? res.json() : Promise.reject(res)))
+      .then(async (res) => {
+        // Eğer yanıt 'ok' (200-299) değilse, bu bir hatadır.
+        if (!res.ok) {
+          // Hata mesajını JSON olarak okumayı dene (Django validasyon hataları)
+          const errorData = await res.json().catch(() => ({}));
+          // Hata verisini fırlat (catch bloğuna düşsün)
+          return Promise.reject(errorData);
+        }
+        // Başarılıysa, JSON verisini döndür
+        return res.json();
+      })
       .then(() => {
         toast.success("Başarılı!", {
           description: "Randevunuz başarıyla oluşturulmuştur.",
@@ -82,16 +126,32 @@ export function AppointmentPage() {
         setAvailableSlots([]);
         setFormData({ user_name: "", user_surname: "", phone: "" });
       })
-      .catch(() =>
-        toast.error("Hata!", {
-          description: "Randevu oluşturulamadı. Lütfen tekrar deneyin.",
-        }),
-      )
+      .catch((errorData) => {
+        // --- YENİ EKLENDİ: Gelişmiş Hata Yakalama ---
+        console.error("Randevu hatası:", errorData);
+
+        // Django'dan gelen spesifik validasyon hatasını ara
+        let errorMessage = "Randevu oluşturulamadı. Lütfen tekrar deneyin.";
+        
+        // views.py'deki 'raise serializers.ValidationError(...)' hatalarını yakalar
+        if (errorData && errorData.non_field_errors) {
+          errorMessage = errorData.non_field_errors[0];
+        } else if (errorData && typeof errorData === 'object' && Object.keys(errorData).length > 0) {
+          // Veya model/serializer kaynaklı başka bir alan hatasıysa
+          // (örn: {'phone': ['Geçerli bir numara girin.']})
+          const firstErrorKey = Object.keys(errorData)[0];
+          errorMessage = `${firstErrorKey}: ${errorData[firstErrorKey][0]}`;
+        }
+
+        toast.error("Hata!", { description: errorMessage });
+        // --- YENİ EKLEME SONU ---
+      })
       .finally(() => setIsLoading(false));
   };
 
   return (
     <main className="flex-grow container mx-auto px-4 py-8 sm:py-12">
+      {/* --- JSX KISMINDA DEĞİŞİKLİK YOK --- */}
       <div className="max-w-2xl mx-auto space-y-12">
         <section>
           <h2 className="text-2xl font-bold text-foreground flex items-center gap-3 mb-4">
@@ -141,7 +201,9 @@ export function AppointmentPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Randevu Detayları</CardTitle>
-                <CardDescription>{`Seçilen tarih: ${selectedDate?.toLocaleDateString("tr-TR")} - ${selectedSlot}`}</CardDescription>
+                <CardDescription>{`Seçilen tarih: ${selectedDate?.toLocaleDateString(
+                  "tr-TR",
+                )} - ${selectedSlot}`}</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleBookingSubmit} className="space-y-4">
